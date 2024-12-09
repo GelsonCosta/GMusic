@@ -16,13 +16,14 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
     private val _loggedInUser = MutableLiveData<User?>()
     val loggedInUser: LiveData<User?> = _loggedInUser
 
-    fun login(email: String, password: String, rememberMe: Boolean) = viewModelScope.launch {
+    fun login(email: String, password: String, rememberMe: Boolean,  onError: (String) -> Unit) = viewModelScope.launch {
         val user = userDao.getUserByEmail(email = email)
         if (user != null && user.password == password) {
             _loggedInUser.postValue(user)
             userDao.updateRememberMe(user.id, rememberMe)
         } else {
-            _loggedInUser.postValue(null) // Login inválido
+            onError("Email ou Senha Errados!")
+            return@launch
         }
     }
 
@@ -33,13 +34,15 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
         _loggedInUser.postValue(null)
     }
 
-    fun register(username: String, email: String, password: String) = viewModelScope.launch {
+    fun register(username: String, email: String, password: String,  onError: (String) -> Unit) = viewModelScope.launch {
         val existingUser = userDao.getUserByEmail(email)
         if (existingUser == null) {
             val user = User(username = username,email = email, password = password)
             userDao.insertUser(user)
+            onError("")
         } else {
-            // email já existe
+            onError("Email já cadastrado!")
+            return@launch
         }
     }
 

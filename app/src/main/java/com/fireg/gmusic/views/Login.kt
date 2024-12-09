@@ -1,5 +1,6 @@
 package com.fireg.gmusic.views
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
@@ -10,6 +11,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -31,7 +33,7 @@ fun Login(
     var passwordError by remember { mutableStateOf<String?>(null) }
     var loginFailed by remember { mutableStateOf(false) }
     val loggedInUser by viewModel.loggedInUser.observeAsState()
-
+    val  context = LocalContext.current;
     // Validation functions
     fun validateEmail(): Boolean {
         val emailRegex = Regex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}$")
@@ -64,6 +66,7 @@ fun Login(
         } else if (loggedInUser == null && email.isNotBlank() && password.isNotBlank()) {
             loginFailed = true
         }
+
     }
 
     Scaffold(
@@ -206,7 +209,10 @@ fun Login(
                     val isPasswordValid = validatePassword()
 
                     if (isEmailValid && isPasswordValid) {
-                        viewModel.login(email, password, rememberMe)
+                        viewModel.login(email, password, rememberMe,
+                            onError = {
+                                Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+                            })
                     }
                 },
                 modifier = Modifier

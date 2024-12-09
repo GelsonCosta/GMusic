@@ -1,5 +1,6 @@
 package com.fireg.gmusic.views
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
@@ -10,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -22,6 +24,7 @@ fun Register(
     viewModel: UserViewModel,
     onBackToLogin: () -> Unit
 ) {
+    val context = LocalContext.current
     var email by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -33,6 +36,7 @@ fun Register(
     var confirmPasswordError by remember { mutableStateOf<String?>(null) }
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
+    var registerError by remember {mutableStateOf(false)}
 
     // Validation functions
     fun validateEmail(): Boolean {
@@ -265,8 +269,17 @@ fun Register(
                     val isConfirmPasswordValid = validateConfirmPassword()
 
                     if (isEmailValid && isUsernameValid && isPasswordValid && isConfirmPasswordValid) {
-                        viewModel.register(username, email, password)
-                        onBackToLogin()
+                        viewModel.register(username, email, password,
+                            onError = {
+                                Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+                                registerError = it == ""
+                            })
+                        if(registerError){
+                            onBackToLogin()
+                        }
+
+
+                       // registerError = false
                     }
                 },
                 modifier = Modifier
